@@ -1,0 +1,66 @@
+<div>Teachable Machine Image Model (File Uploader)</div>
+<button type="button" onclick="init()">Start</button>
+<input type="file" id="file-input" accept="image/*">
+<img id="uploaded-image" style="max-width: 200px; max-height: 200px; display: none;">
+<div id="label-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+<script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "https://teachablemachine.withgoogle.com/models/j7IRbziaT/";
+
+    let model, labelContainer, maxPredictions, imageElement, fileInput; // Removed webcam
+
+    // Load the image model and setup the file input
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        // load the model and metadata
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // Setup file input
+        fileInput = document.getElementById("file-input");
+        imageElement = document.getElementById("uploaded-image");
+
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageElement.src = e.target.result;
+                    imageElement.style.display = 'block'; // Show the image
+                    imageElement.onload = predict; // Predict once the image is loaded
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // append elements to the DOM
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
+
+    // Removed loop function as it's for webcam streaming; prediction is now triggered by file input change.
+
+    // run the image through the image model
+    async function predict() {
+        if (!imageElement || !imageElement.src || imageElement.style.display === 'none') {
+            console.log("No image loaded for prediction.");
+            return;
+        }
+        // predict can take in an image, video or canvas html element
+        const prediction = await model.predict(imageElement);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }
+</script>
