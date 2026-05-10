@@ -29,9 +29,9 @@
 
 ## Current Results
 
-**Training Images**:15 per class
+**Training Images**:20 per class
 
-**Test Accuracy**:70% 
+**Test Accuracy**:83.3% 
 
 **Challenges**: The model currently struggles with very small nodules or blurry images].
 
